@@ -17,7 +17,7 @@ public class ShieldController : MonoBehaviour
     [SerializeField] private float _timeSinceThrown;
 
     public bool IsHeld = true;
-    public bool CanBePickedUp() => (!IsHeld && _timeSinceThrown > _pickUpDelay);
+    public bool CanBePickedUp() => (!IsHeld && ( _timeSinceThrown > _pickUpDelay || _thrownShieldRigidBody.velocity.magnitude < 0.5f ));
 
 
     private void Awake()
@@ -46,6 +46,14 @@ public class ShieldController : MonoBehaviour
         _heldShield.SetActive(true);
 
         IsHeld = true;
+    }
+
+    public void Remove()
+    {
+        _thrownShield.SetActive(false);
+        _heldShield.SetActive(false);
+
+        IsHeld = false;
     }
 
 
@@ -80,12 +88,12 @@ public class ShieldController : MonoBehaviour
             return;
         }
 
+        Debug.Log(_thrownShieldRigidBody.velocity.magnitude);
         _timeSinceThrown += Time.deltaTime;
 
         var shieldSpeed = _thrownShieldRigidBody.velocity.magnitude;
         if (shieldSpeed < 1f)
         {
-            //Debug.Log("Shield stopped, ready to pickup");
             _thrownShieldRigidBody.velocity = new Vector2(0, 0);
         }
     }

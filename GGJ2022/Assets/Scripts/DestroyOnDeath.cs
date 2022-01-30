@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class DestroyOnDeath : MonoBehaviour
 {
+    [SerializeField] private float delay;
 
     public void OnDeath()
     {
@@ -17,7 +18,7 @@ public class DestroyOnDeath : MonoBehaviour
 
         //Destroy(gameObject, 2f); // destroy after X seconds.
 
-        Destroy(gameObject);
+        Destroy(gameObject, delay);
 
     }
 

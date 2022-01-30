@@ -27,11 +27,12 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D _rigidBody;
     private SpriteRenderer _renderer;
     private Color _origColour;
-    private CircleCollider2D _collider;
+    private BoxCollider2D _collider;
 
 
 
     public bool IsHoldingShield = true;
+    public bool CanThrow;
     public bool CanRoll;
     public bool IsRolling;
     private float RollTime = 0.7f;
@@ -46,14 +47,14 @@ public class PlayerController : MonoBehaviour
         _moveRotate = GetComponent<MoveAndRotate>();
         _stats = GetComponent<StatsHandler>();
         _rigidBody = GetComponent<Rigidbody2D>();
-        _renderer = GetComponent<SpriteRenderer>();
-        _collider = GetComponent<CircleCollider2D>();
+        //_renderer = GetComponent<SpriteRenderer>();
+        _collider = GetComponent<BoxCollider2D>();
         _shield = GetComponent<ShieldController>();
         _health = GetComponent<HealthSystem>();
 
         _playerInput = GetComponent<PlayerInput>();
 
-        _origColour = _renderer.color;
+        //_origColour = _renderer.color;
         _transform = transform;        
     }
 
@@ -124,7 +125,7 @@ public class PlayerController : MonoBehaviour
 
         _controller.IsAttacking = false;
 
-        if (IsHoldingShield)
+        if (CanThrow && IsHoldingShield)
         {
             ThrowShield();
         }
@@ -136,7 +137,7 @@ public class PlayerController : MonoBehaviour
         
     }
 
-    public void InitValues(bool isTutorial)
+    public void InitValues(int tutorial)
     {
         _health.ResetHealth();
 
@@ -145,21 +146,19 @@ public class PlayerController : MonoBehaviour
             _playerInput.ActivateInput();
         }
 
-        //_rigidBody.WakeUp();
-        //_transform.localScale = Vector3.one;
+        IsHoldingShield = (tutorial > 0);
+        CanThrow = (tutorial >= 1);
+        CanRoll = (tutorial >= 2);
 
-        if (isTutorial)
+        if (tutorial == 0)
         {
-
+            _shield.Remove();
             _stats.UpdateSpeed(_withoutShieldSpeed);
-            IsHoldingShield = false;
         }
         else
         {
-            
             _shield.PickUp(_transform);
             _stats.UpdateSpeed(_withShieldSpeed);
-            IsHoldingShield = true;
         }
 
     }
@@ -225,13 +224,23 @@ public class PlayerController : MonoBehaviour
     {
         if (collision.collider.CompareTag("Shield"))
         {
-            Debug.Log("SHIELD " + _shield.CanBePickedUp(), this);
             if (_shield.CanBePickedUp())
             {
                 PickUpShield();
             }
         }
 
+    }
+
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        if (collision.collider.CompareTag("Shield"))
+        {
+            if (_shield.CanBePickedUp())
+            {
+                PickUpShield();
+            }
+        }
     }
 
 
@@ -242,7 +251,7 @@ public class PlayerController : MonoBehaviour
         if (currentDirection != Vector3.zero)
         {
             IsRolling = true;
-            _renderer.material.color = Color.red;
+            //_renderer.material.color = Color.red;
 
             var elapsedTime = 0f;
             while (elapsedTime < RollTime)
@@ -252,7 +261,7 @@ public class PlayerController : MonoBehaviour
                 yield return null;
             }
 
-            _renderer.material.color = _origColour;
+            //_renderer.material.color = _origColour;
             IsRolling = false;
         }
 

@@ -2,12 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TurretController : TopDownCharacterController
+public class TurretController : EnemyControllerBase
 {
 
-    private void FixedUpdate()
+    protected override void FixedUpdate()
     {
-        IsAttacking = true;   
+        base.FixedUpdate();
+
+        IsAttacking = true;
+        
     }
 
 }

@@ -17,10 +17,12 @@ public class BasicEnemy : EnemyControllerBase
         IsAttacking = false;
         if (distance <= _followRange)
         {
+            OnRotateEvent.Invoke(direction);
+
             if (distance <= _shootRange)
             {
                 // close enough to shoot, so stop and shoot!
-                OnRotateEvent.Invoke(direction);
+                
                 OnMoveEvent.Invoke(Vector2.zero);
                 IsAttacking = true;
             }

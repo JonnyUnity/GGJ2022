@@ -16,3 +16,4 @@ MonoBehaviour:
   Speed: 4
   TimeBetweenAttacks: 2
   ProjectileDamage: 1
+  AccuracyVariance: 10

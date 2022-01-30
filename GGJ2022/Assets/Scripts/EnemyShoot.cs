@@ -40,7 +40,7 @@ public class EnemyShoot : MonoBehaviour
         var bulletObj = Instantiate(_bulletPrefab);
 
         bulletObj.transform.position = _bulletSpawn.transform.position;
-        var rotateVector = _aimDirection.normalized;
+        var rotateVector = FudgeAim(_aimDirection.normalized, _stats.Stats.AccuracyVariance);
 
         if (bulletObj.TryGetComponent(out Bullet bullet))
         {
@@ -49,6 +49,14 @@ public class EnemyShoot : MonoBehaviour
 
     }
 
+
+    private Vector2 FudgeAim(Vector2 direction, float variance)
+    {
+        var fudgeAngle = Random.Range(-variance, variance);
+
+        return Quaternion.Euler(0, 0, fudgeAngle) * direction;
+
+    }
 
 
 }

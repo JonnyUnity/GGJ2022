@@ -9,4 +9,5 @@ public class CharacterStats : ScriptableObject
     public float Speed;
     public float TimeBetweenAttacks;
     public int ProjectileDamage;
+    public float AccuracyVariance;
 }

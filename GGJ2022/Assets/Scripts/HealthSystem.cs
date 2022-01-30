@@ -9,10 +9,12 @@ public class HealthSystem : MonoBehaviour
     private StatsHandler _stats;
 
 
+    [SerializeField] private UnityEvent onInit;
     [SerializeField] private UnityEvent onDamage;
     [SerializeField] private UnityEvent<string> onDeath = new UnityEvent<string>();
 
 
+    public UnityEvent OnInit => onInit;
     public UnityEvent OnDamage => onDamage;
     public UnityEvent<string> OnDeath => onDeath;
 
@@ -34,6 +36,7 @@ public class HealthSystem : MonoBehaviour
     {
         MaxHealth = _stats.Stats.MaxHealth;
         CurrentHealth = _stats.Stats.MaxHealth;
+        onInit.Invoke();
     }
 
     public bool ChangeHealth(float change)

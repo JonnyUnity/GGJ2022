@@ -8,6 +8,7 @@ public class GameManager : Singleton<GameManager>
     [SerializeField] private PlayerController Player;
     [SerializeField] private GameObject _tutorialShield;
 
+
     private LevelManager levelManager;
 
     private int spawnIndex;
@@ -16,7 +17,7 @@ public class GameManager : Singleton<GameManager>
 
     private int currentPlayerHealth;
 
-    public bool IsTutorial = true;
+    [SerializeField] private int _tutorialLevel;
 
     private Controls _controls;
 
@@ -50,17 +51,33 @@ public class GameManager : Singleton<GameManager>
 
         Debug.Log("New LEVEL!");
 
+        if (Player == null)
+        {
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null)
+            {
+                Player = playerObj.GetComponent<PlayerController>();
+            }
+        }
+               
+
         SpawnPlayer();
 
     }
+
+
 
     private void SpawnPlayer()
     {
         _controls.Enable();
 
-        Player.InitValues(IsTutorial);
-        var spawn = levelManager.GetSpawn(spawnIndex);
-        Player.transform.position = spawn.transform.position;
+        Player.InitValues(_tutorialLevel);
+        //var spawn = levelManager.GetSpawn(spawnIndex);
+
+        var checkpointPos = levelManager.GetCheckpointPosition(spawnIndex);
+
+        //Player.transform.position = spawn.transform.position;
+        Player.transform.position = checkpointPos;
     }
 
 
@@ -78,12 +95,12 @@ public class GameManager : Singleton<GameManager>
 
         
 
-        if (IsTutorial)
+        if (_tutorialLevel == 0)
         {
             ResetTutorial();
         }
 
-        Player.InitValues(IsTutorial);
+        //Player.InitValues(IsTutorial);
         SpawnPlayer();
 
     }
@@ -93,7 +110,6 @@ public class GameManager : Singleton<GameManager>
         if (spawnIndex > this.spawnIndex)
         {
             this.spawnIndex = spawnIndex;
-            IsTutorial = !IsTutorial;
         }        
     }
 
@@ -103,19 +119,20 @@ public class GameManager : Singleton<GameManager>
         SceneManager.LoadScene(sceneIndex);
     }
 
-    public void TutorialPassed()
+   
+   
+    public void UpdateTutorial(int tutorialLevel)
     {
-
-        
-        IsTutorial = true;
+        _tutorialLevel = tutorialLevel;
+        Player.CanThrow = (_tutorialLevel > 0);
+        Player.CanRoll = (_tutorialLevel > 1);
 
     }
-    
+
     private void ResetTutorial()
     {
-
         _tutorialShield.SetActive(true);
-
+   
     }
     
 
