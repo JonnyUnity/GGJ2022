@@ -1,19 +1,27 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
 
-    private TopDownCharacterController _controller;
+    protected TopDownInputController _controller;
+    private ShieldController _shield;
     private MoveAndRotate _moveRotate;
     private StatsHandler _stats;
+    private HealthSystem _health;
+    private PlayerInput _playerInput;
+
     private Transform _transform;
+
+    [SerializeField] private Transform _thrownSpawn;
 
     [SerializeField] private float _withShieldSpeed = 2f;
     [SerializeField] private float _withoutShieldSpeed = 4f;
     [SerializeField] private float _rollSpeed = 4.5f;
-    //private float currentSpeed;
+
 
 
     private Rigidbody2D _rigidBody;
@@ -21,45 +29,160 @@ public class PlayerController : MonoBehaviour
     private Color _origColour;
     private CircleCollider2D _collider;
 
-    //private Vector2 _leftStickInput;
 
+
+    public bool IsHoldingShield = true;
+    public bool CanRoll;
     public bool IsRolling;
     private float RollTime = 0.7f;
 
+
+    [SerializeField] private UnityEvent onPlayerDied = new UnityEvent();
+    public UnityEvent OnPlayerDied => onPlayerDied;
+
     private void Awake()
     {
-        _controller = GetComponent<TopDownCharacterController>();
+        _controller = GetComponent<TopDownInputController>();
         _moveRotate = GetComponent<MoveAndRotate>();
         _stats = GetComponent<StatsHandler>();
         _rigidBody = GetComponent<Rigidbody2D>();
         _renderer = GetComponent<SpriteRenderer>();
         _collider = GetComponent<CircleCollider2D>();
+        _shield = GetComponent<ShieldController>();
+        _health = GetComponent<HealthSystem>();
+
+        _playerInput = GetComponent<PlayerInput>();
+
         _origColour = _renderer.color;
         _transform = transform;        
     }
 
-    void Start()
+    protected virtual void Start()
     {
         _controller.OnAttackEvent.AddListener(DoAction);
+        _shield.SetShieldDamage(_stats.Stats.ProjectileDamage);
+
+        _health.OnDeath.AddListener(PlayerDied);
     }
 
-    private void DoAction()
+
+    public void PlayerDied(string deathType)
     {
-        Debug.Log("DO ACTION!");
+        _playerInput.DeactivateInput();
+
+        StartCoroutine(CR_ShowPlayerDeath(deathType));
+
+
+        // throw event up the chain to the game manager (is this good?)
+        //onPlayerDied.Invoke();
+    }
+
+
+
+    private IEnumerator CR_ShowPlayerDeath(string deathType)
+    {
+        Debug.Log("Start death!");
+        //_rigidBody.Sleep();
+
+        if (deathType == "Pit")
+        {
+            // shrink sprite...
+            // _transform.localScale = Vector3.Lerp(_transform.localScale, Vector3.zero, 1 / (Time.deltaTime * 2f));
+            yield return StartCoroutine(CR_FallInPit());
+        }
+        else
+        {
+            // play death animination
+        }
+
+        //yield return new WaitForSeconds(2f);
+
+        OnPlayerDied.Invoke();
+
+    }
+
+    private IEnumerator CR_FallInPit()
+    {
+        var elapsed = 0f;
+
+        while (elapsed < 1f)
+        {
+            //_transform.localScale = Vector3.Lerp(_transform.localScale, Vector3.zero, 1 / elapsed);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+    }
+
+    private IEnumerator CR_DeathAnimation()
+    {
+        yield return new WaitForSeconds(2f);
+    }
+
+    protected virtual void DoAction()
+    {
+
         _controller.IsAttacking = false;
 
-        if (GameManager.Instance.IsShieldHeld)
+        if (IsHoldingShield)
         {
-            GameManager.Instance.ThrowShield();
-            _stats.UpdateSpeed(_withoutShieldSpeed);
+            ThrowShield();
         }
-        else if (!IsRolling)
+        else if (CanRoll && !IsRolling)
         {
             StartCoroutine(CR_PerformRoll());
         }
 
+        
+    }
+
+    public void InitValues(bool isTutorial)
+    {
+        _health.ResetHealth();
+
+        if (!_playerInput.inputIsActive)
+        {
+            _playerInput.ActivateInput();
+        }
+
+        //_rigidBody.WakeUp();
+        //_transform.localScale = Vector3.one;
+
+        if (isTutorial)
+        {
+
+            _stats.UpdateSpeed(_withoutShieldSpeed);
+            IsHoldingShield = false;
+        }
+        else
+        {
+            
+            _shield.PickUp(_transform);
+            _stats.UpdateSpeed(_withShieldSpeed);
+            IsHoldingShield = true;
+        }
 
     }
+
+
+    protected void ThrowShield()
+    {
+        _shield.Throw(_transform.up.normalized, _thrownSpawn.localPosition);
+
+
+        _stats.UpdateSpeed(_withoutShieldSpeed);
+        IsHoldingShield = false;
+    }
+
+
+    public void PickUpShield()
+    {
+        _shield.PickUp(_transform);
+
+        _stats.UpdateSpeed(_withShieldSpeed);
+        IsHoldingShield = true;
+    }
+
 
     public IEnumerator FallInPit()
     {
@@ -73,19 +196,17 @@ public class PlayerController : MonoBehaviour
         _rigidBody.constraints = RigidbodyConstraints2D.FreezeRotation;
         _moveRotate.AddListeners();
 
-
     }
+
 
     private IEnumerator FallIntoPit()
     {
-        Debug.Log("FELL INTO A PIT!");
+
 
         // play fall animation?
         yield return new WaitForSeconds(3f);
 
-        Debug.Log(_controller.LastPosition);
-        //transform.position = _controller.LastPosition - _controller.LastMovementDirection.normalized;
-        //transform.position = _controller.LastPosition;
+        //Debug.Log(_controller.LastPosition);
         _rigidBody.position = _controller.LastPosition;
 
     }
@@ -99,66 +220,22 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    //protected override void Update()
-    //{
-    //    if (IsAttacking)
-    //    {
-    //        if (GameManager.Instance.IsShieldHeld)
-    //        {
-    //            GameManager.Instance.ThrowShield();
-    //            _stats.UpdateSpeed(_withoutShieldSpeed);
-    //        }
-    //        else if (!IsRolling)
-    //        {
-    //            StartCoroutine(CR_PerformRoll());
-    //        }
-    //    }
-    //}
 
-    private void GetPlayerInput()
+    private void OnCollisionEnter2D(Collision2D collision)
     {
-
-        if (IsRolling)
+        if (collision.collider.CompareTag("Shield"))
         {
-            return;
+            Debug.Log("SHIELD " + _shield.CanBePickedUp(), this);
+            if (_shield.CanBePickedUp())
+            {
+                PickUpShield();
+            }
         }
-        
-       
 
-
-        //_leftStickInput = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
-
-        //if (_leftStickInput != Vector2.zero)
-        //{
-        //    if (Input.GetKeyDown(KeyCode.Space) && !GameManager.Instance.IsShieldHeld)
-        //    {
-        //        StartCoroutine(CR_PerformRoll());
-        //    }
-        //}
-
-        //if (GameManager.Instance.IsShieldHeld)
-        //{
-        //    // Throw the shield when the mouse button is clicked.
-        //    if (Input.GetMouseButtonDown(0))
-        //    {
-        //        GameManager.Instance.ThrowShield();
-        //        currentSpeed = _withoutShieldSpeed;
-
-        //    }
-        //}
-        
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.CompareTag("Shield"))
-        {
-            GameManager.Instance.PickUpShield();
-            _stats.UpdateSpeed(_withShieldSpeed);
-        }
-    }
 
-    private IEnumerator CR_PerformRoll()
+    protected IEnumerator CR_PerformRoll()
     {
         var currentDirection = (Vector3)_controller.LastMovementDirection.normalized;
 

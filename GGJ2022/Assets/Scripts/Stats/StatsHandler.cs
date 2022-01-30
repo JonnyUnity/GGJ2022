@@ -9,9 +9,7 @@ public class StatsHandler : MonoBehaviour
 
     public void UpdateSpeed(float newSpeed)
     {
-
-        Stats.speed = newSpeed;
-
+        Stats.Speed = newSpeed;
     }
 
 

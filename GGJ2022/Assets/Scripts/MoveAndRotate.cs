@@ -43,7 +43,7 @@ public class MoveAndRotate : MonoBehaviour
 
     private void Move(Vector2 direction)
     {
-        Debug.Log("Move: " + direction);
+        //Debug.Log("Move: " + direction);
         _movementDirection = direction;
     }
 
@@ -61,7 +61,7 @@ public class MoveAndRotate : MonoBehaviour
     protected virtual void FixedUpdate()
     {
 
-        Vector2 movement = _movementDirection * _stats.Stats.speed * Time.deltaTime;
+        Vector2 movement = _movementDirection * _stats.Stats.Speed * Time.deltaTime;
 
         _rigidBody.MovePosition(_rigidBody.position + movement);
 

@@ -5,6 +5,9 @@ using UnityEngine.Events;
 
 public class TopDownCharacterController : MonoBehaviour
 {
+
+    private StatsHandler _stats;
+
     public bool IsAttacking { get; set; }
     private float _timeSinceLastAttack;
 
@@ -27,7 +30,7 @@ public class TopDownCharacterController : MonoBehaviour
 
     protected virtual void Awake()
     {
-        
+        _stats = GetComponent<StatsHandler>();
     }
 
     void Start()
@@ -41,11 +44,13 @@ public class TopDownCharacterController : MonoBehaviour
 
         _timeSinceLastAttack += Time.deltaTime;
 
-        if (IsAttacking && _timeSinceLastAttack > _attackDelay)
+        if (IsAttacking && _timeSinceLastAttack > _stats.Stats.TimeBetweenAttacks)
         {
             _timeSinceLastAttack = 0f;
             onAttackEvent.Invoke();
         }
 
     }
+
+
 }

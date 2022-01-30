@@ -1,27 +1,66 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : Singleton<GameManager>
 {
     [SerializeField] private PlayerController Player;
-    [SerializeField] private ShieldController Shield;
+    [SerializeField] private GameObject _tutorialShield;
 
+    private LevelManager levelManager;
 
-    public Transform PlayerTransform
+    private int spawnIndex;
+
+    private int sceneIndex = 1;
+
+    private int currentPlayerHealth;
+
+    public bool IsTutorial = true;
+
+    private Controls _controls;
+
+    private void Awake()
     {
-        get
-        {
-            return Player.transform;
-        }
-    }
+        Debug.Log("GAME MANAGER AWAKE");
 
-    public bool IsShieldHeld = true;
+        SceneManager.sceneLoaded += LoadLevel;
+
+        DontDestroyOnLoad(gameObject);
+
+        _controls = new Controls();
+        
+        
+    }
 
 
     void Start()
     {
-        
+        Debug.Log("GAME MANAGER START");
+        SpawnPlayer();
+
+        Player.OnPlayerDied.AddListener(OnPlayerDied);
+
+    }
+
+    private void LoadLevel(Scene scene, LoadSceneMode mode)
+    {
+        var gridObject = GameObject.Find("/Grid");
+        levelManager = gridObject.GetComponent<LevelManager>();
+
+        Debug.Log("New LEVEL!");
+
+        SpawnPlayer();
+
+    }
+
+    private void SpawnPlayer()
+    {
+        _controls.Enable();
+
+        Player.InitValues(IsTutorial);
+        var spawn = levelManager.GetSpawn(spawnIndex);
+        Player.transform.position = spawn.transform.position;
     }
 
 
@@ -31,18 +70,52 @@ public class GameManager : Singleton<GameManager>
     }
 
 
-    public void ThrowShield()
+    public void OnPlayerDied()
     {
+
+        _controls.Disable();
+        Debug.Log("GAME OVER MAN!");
+
         
-        Shield.Throw();
-        IsShieldHeld = false;
+
+        if (IsTutorial)
+        {
+            ResetTutorial();
+        }
+
+        Player.InitValues(IsTutorial);
+        SpawnPlayer();
 
     }
 
-    public void PickUpShield()
+    public void UpdateSpawnIndex(int spawnIndex)
     {
-        Shield.PickUp(Player.transform);
-        IsShieldHeld = true;
+        if (spawnIndex > this.spawnIndex)
+        {
+            this.spawnIndex = spawnIndex;
+            IsTutorial = !IsTutorial;
+        }        
+    }
+
+    public void LoadNextLevel()
+    {
+        sceneIndex++;
+        SceneManager.LoadScene(sceneIndex);
+    }
+
+    public void TutorialPassed()
+    {
+
+        
+        IsTutorial = true;
+
+    }
+    
+    private void ResetTutorial()
+    {
+
+        _tutorialShield.SetActive(true);
+
     }
     
 

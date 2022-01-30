@@ -12,5 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43ef0013014f4fc4aa978fc15e254627, type: 3}
   m_Name: PlayerStats
   m_EditorClassIdentifier: 
-  speed: 2
-  timeBetweenAttacks: 0
+  MaxHealth: 10
+  Speed: 0
+  TimeBetweenAttacks: 0
+  ProjectileDamage: 1

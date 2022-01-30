@@ -4,102 +4,90 @@ using UnityEngine;
 
 public class ShieldController : MonoBehaviour
 {
+    [SerializeField] private GameObject _heldShield;
+    [SerializeField] private GameObject _thrownShield;
 
-    [SerializeField] private Sprite _heldSprite;
-    [SerializeField] private Sprite _thrownSprite;
+    private Rigidbody2D _thrownShieldRigidBody;
+    private CircleCollider2D _thrownShieldCollider;
 
-    private Transform _transform;
-    private SpriteRenderer _renderer;
-    private Rigidbody2D _rigidBody;
-    private BoxCollider2D _collider;
+    private ShieldCollider _shieldCollider;
+
+    [SerializeField] private float _shieldDamage = 10f;
+    [SerializeField] private float _pickUpDelay = 1.5f;
+    [SerializeField] private float _timeSinceThrown;
 
     public bool IsHeld = true;
-    private bool IsStationary;
+    public bool CanBePickedUp() => (!IsHeld && _timeSinceThrown > _pickUpDelay);
+
 
     private void Awake()
     {
-        _transform = transform;
-        _renderer = GetComponent<SpriteRenderer>();
-        _rigidBody = GetComponent<Rigidbody2D>();
-        _collider = GetComponent<BoxCollider2D>();
+        _thrownShieldRigidBody = _thrownShield.GetComponent<Rigidbody2D>();
+        _thrownShieldCollider = _thrownShield.GetComponent<CircleCollider2D>();
+
+        _shieldCollider = _thrownShield.GetComponent<ShieldCollider>();
     }
 
-    public void Start()
+
+    void Start()
     {
         
-        
+    }
+
+    public void SetShieldDamage(int damage)
+    {
+        _shieldCollider.SetDamage(damage);
     }
 
     public void PickUp(Transform playerTransform)
     {
-        
-        _rigidBody.isKinematic = true;
-        _transform.localScale = new Vector3(1, 0.25f);
-        _collider.size = _transform.localScale;
-        _collider.isTrigger = false;
-        _renderer.sprite = _heldSprite;
+        _thrownShield.transform.parent = playerTransform;
+        _thrownShield.SetActive(false);
+        _heldShield.SetActive(true);
 
-        _transform.parent = playerTransform;
-        _transform.localRotation = Quaternion.identity;
-        _transform.localPosition = new Vector3(0, 0.87f, 0); // change this to constant!
         IsHeld = true;
-        IsStationary = false;
-
     }
 
-    private void ReadyToPickUp()
+
+    public void Throw(Vector2 direction, Vector2 throwSpawn)
     {
-        _collider.isTrigger = true;
-        IsStationary = true;
+        _thrownShield.transform.localPosition = throwSpawn;
+        _thrownShield.transform.localRotation = Quaternion.Euler(0, 0, 0);
+
+        _thrownShield.SetActive(true);
+        _thrownShieldCollider.isTrigger = false;
+        _thrownShield.transform.parent = null;
+
+        //Debug.Log(_thrownShield.transform.position + " " + direction);
+        _thrownShield.transform.up = direction;
+        _heldShield.SetActive(false);
+
+        IsHeld = true;
+        
+
+        Vector2 force = new(0, 10);
+        _thrownShieldRigidBody.AddRelativeForce(force, ForceMode2D.Impulse);
+
+        IsHeld = false;
+        _timeSinceThrown = 0f;
     }
 
-    public void Update()
-    {
 
-        if (IsHeld || IsStationary)
+    void Update()
+    {
+        if (IsHeld)
         {
             return;
         }
 
-        //if (IsHeld)
-        //{
-        //    // Throw the shield when the mouse button is clicked.
-        //    if (Input.GetMouseButtonDown(0))
-        //    {
-        //        Throw();
-        //        Debug.Log("Throwing Shield");
-        //        _rigidBody.isKinematic = false;
-        //        IsHeld = false;
-        //        _renderer.sprite = _thrownSprite;
+        _timeSinceThrown += Time.deltaTime;
 
-
-        //    }
-        //}
-        
-        var shieldSpeed = _rigidBody.velocity.magnitude;
-        //Debug.Log(shieldSpeed);
-        if (shieldSpeed < 0.5)
+        var shieldSpeed = _thrownShieldRigidBody.velocity.magnitude;
+        if (shieldSpeed < 1f)
         {
-            Debug.Log("Shield stopped, ready to pickup");
-            _rigidBody.velocity = new Vector2(0, 0);
-            ReadyToPickUp();
+            //Debug.Log("Shield stopped, ready to pickup");
+            _thrownShieldRigidBody.velocity = new Vector2(0, 0);
         }
-
-    }
-
-    public void Throw()
-    {
-        _transform.parent = null;
-        _rigidBody.isKinematic = false;
-        _transform.localScale = new Vector3(1, 1);
-        _collider.size = _transform.localScale;
-        _renderer.sprite = _thrownSprite;
-
-        Vector2 force = new Vector2(0, 10);
-        _rigidBody.AddRelativeForce(force, ForceMode2D.Impulse);
-
-        IsHeld = false;
-
     }
 
 }

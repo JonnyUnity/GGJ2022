@@ -33,7 +33,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -1848,7 +1848,7 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      sokoban_spritesheet_79: -397227028
+      sokoban_spritesheet_45: 503998454
       sokoban_spritesheet_49: -2122080126
       sokoban_spritesheet_59: -331919306
       sokoban_spritesheet_66: -504443701
@@ -1921,15 +1921,15 @@ TextureImporter:
       sokoban_spritesheet_10: -579397215
       sokoban_spritesheet_51: -1045770805
       sokoban_spritesheet_78: 62346674
+      sokoban_spritesheet_9: -1077223543
       sokoban_spritesheet_4: -108487350
       sokoban_spritesheet_6: 827517672
       sokoban_spritesheet_80: 1388697214
-      sokoban_spritesheet_33: -1636049259
       sokoban_spritesheet_14: -1971366753
-      sokoban_spritesheet_9: -1077223543
-      sokoban_spritesheet_45: 503998454
-      sokoban_spritesheet_37: 503736691
+      sokoban_spritesheet_33: -1636049259
       sokoban_spritesheet_26: -349690235
+      sokoban_spritesheet_79: -397227028
+      sokoban_spritesheet_37: 503736691
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0

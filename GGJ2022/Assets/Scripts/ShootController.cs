@@ -9,7 +9,7 @@ public class ShootController : MonoBehaviour
     [SerializeField] private GameObject _bulletSpawn;
     [SerializeField] private float _bulletSpeed;
 
-    private float SecondsBetweenShots = 2f;
+    private float SecondsBetweenShots = float.MaxValue;
     private float _timeSinceLastShot;
 
     void Start()
@@ -45,7 +45,7 @@ public class ShootController : MonoBehaviour
 
         if (bulletObj.TryGetComponent(out Bullet bullet))
         {
-            bullet.Fire(_bulletSpeed);
+            //bullet.Fire(_bulletSpeed);
         }
 
 
